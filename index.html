@@ -25,13 +25,17 @@
     .log-btn .label { font-size: 14px; font-weight: 500; color: #111; }
     .log-btn.custom { background: #EEEDFE; border-color: #AFA9EC; }
     .log-btn.custom .label { color: #534AB7; }
+    .log-btn.photo { background: #E8F4FF; border-color: #A8D0F0; }
+    .log-btn.photo .label { color: #1A6BA0; }
     .log-entry { display: flex; align-items: flex-start; padding: 10px 0; border-bottom: 0.5px solid #f0f0f0; gap: 8px; }
     .log-entry:last-child { border-bottom: none; }
     .log-entry .emoji { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
-    .log-entry-body { flex: 1; }
+    .log-entry-body { flex: 1; min-width: 0; }
     .log-entry .name { font-size: 14px; color: #111; }
     .log-entry .time { font-size: 12px; color: #888; margin-top: 2px; }
     .log-entry .note { font-size: 12px; color: #888; margin-top: 3px; }
+    .log-photo { width: 100%; max-height: 200px; object-fit: cover; border-radius: 10px; margin-top: 8px; display: block; }
+    .log-download { font-size: 12px; color: #534AB7; display: block; margin-top: 4px; }
     .log-actions { display: flex; gap: 6px; flex-shrink: 0; }
     .btn-edit { background: #EEEDFE; border: none; border-radius: 8px; padding: 4px 10px; font-size: 12px; color: #534AB7; cursor: pointer; }
     .btn-delete { background: #FDECEC; border: none; border-radius: 8px; padding: 4px 10px; font-size: 12px; color: #9C2B2B; cursor: pointer; }
@@ -43,7 +47,7 @@
     .schedule-row.active .schedule-time { color: #26215C; }
     .schedule-activity { font-size: 14px; color: #111; }
     .schedule-row.active .schedule-activity { font-weight: 600; color: #26215C; }
-    .schedule-now-badge { font-size: 11px; font-weight: 600; color: #534AB7; background: #534AB7; color: white; border-radius: 20px; padding: 2px 8px; margin-left: 8px; display: inline-block; }
+    .schedule-now-badge { font-size: 11px; font-weight: 600; background: #534AB7; color: white; border-radius: 20px; padding: 2px 8px; margin-left: 8px; display: inline-block; }
     .info-row { padding: 10px 0; border-bottom: 0.5px solid #f0f0f0; }
     .info-row:last-child { border-bottom: none; }
     .info-label { font-size: 11px; color: #888; margin-bottom: 3px; }
@@ -57,9 +61,8 @@
     .thickening-card { background: #FFF8E1; border-color: #F5D98B; }
     .thickening-card .section-title { color: #8A6D00; }
     .thickening-text { font-size: 14px; color: #5C4900; }
-    .med-btn { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-radius: 10px; border: 1px solid #eee; margin-bottom: 8px; cursor: pointer; background: white; transition: background 0.1s; }
+    .med-btn { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-radius: 10px; border: 1px solid #eee; margin-bottom: 8px; background: white; }
     .med-btn:last-child { margin-bottom: 0; }
-    .med-btn:active { background: #f5f5f5; }
     .med-btn-left { flex: 1; }
     .med-btn-name { font-size: 14px; font-weight: 600; color: #111; }
     .med-btn-instructions { font-size: 12px; color: #888; margin-top: 3px; }
@@ -71,11 +74,14 @@
     .day-nav button { background: none; border: none; font-size: 20px; cursor: pointer; color: #534AB7; padding: 4px 8px; }
     .day-nav button:disabled { color: #ccc; cursor: default; }
     .day-label { font-size: 15px; font-weight: 600; color: #111; }
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; padding: 24px; z-index: 100; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; padding: 24px; z-index: 100; overflow-y: auto; }
     .modal { background: white; border-radius: 16px; padding: 20px; width: 100%; max-width: 400px; }
     .modal h3 { font-size: 16px; font-weight: 600; margin-bottom: 12px; }
     .modal input[type="time"] { width: 100%; border: 1px solid #ddd; border-radius: 10px; padding: 12px; font-size: 14px; margin-bottom: 12px; font-family: inherit; }
     .modal textarea { width: 100%; border: 1px solid #ddd; border-radius: 10px; padding: 12px; font-size: 14px; min-height: 80px; resize: none; font-family: inherit; }
+    .modal-label { font-size: 12px; color: #888; margin-bottom: 8px; display: block; margin-top: 4px; }
+    .photo-upload-btn { width: 100%; padding: 10px; border: 1.5px dashed #ddd; border-radius: 10px; background: #f9f9f9; color: #534AB7; font-size: 14px; font-weight: 500; cursor: pointer; text-align: center; margin-top: 8px; display: block; }
+    .photo-preview-img { width: 100%; border-radius: 10px; margin-top: 8px; max-height: 180px; object-fit: cover; }
     .modal-btns { display: flex; gap: 10px; margin-top: 12px; }
     .btn-cancel { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 10px; background: white; font-size: 14px; color: #888; cursor: pointer; }
     .btn-submit { flex: 2; padding: 12px; border: none; border-radius: 10px; background: #534AB7; color: white; font-size: 14px; font-weight: 500; cursor: pointer; }
@@ -91,7 +97,7 @@
     .therapy-row:last-child { border-bottom: none; }
     .therapy-day { font-size: 14px; font-weight: 600; color: #26215C; }
     .therapy-provider { font-size: 13px; color: #534AB7; margin-top: 2px; }
-    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #26215C; color: white; padding: 10px 20px; border-radius: 20px; font-size: 14px; font-weight: 500; z-index: 200; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #26215C; color: white; padding: 10px 20px; border-radius: 20px; font-size: 14px; font-weight: 500; z-index: 200; opacity: 0; transition: opacity 0.3s; pointer-events: none; white-space: nowrap; }
     .toast.show { opacity: 1; }
   </style>
 </head>
@@ -141,7 +147,11 @@
         <div class="log-btn" onclick="addLog('lunch')"><span class="emoji">🍽</span><span class="label">Lunch</span></div>
         <div class="log-btn" onclick="addLog('nap_start')"><span class="emoji">😴</span><span class="label">Nap start</span></div>
         <div class="log-btn" onclick="addLog('nap_end')"><span class="emoji">⏰</span><span class="label">Nap end</span></div>
-        <div class="log-btn custom" onclick="openCustomModal()" style="grid-column: span 2;"><span class="emoji">✏️</span><span class="label">Custom</span></div>
+        <div class="log-btn photo" onclick="document.getElementById('photo-log-input').click()">
+          <span class="emoji">📷</span><span class="label">Photo</span>
+          <input type="file" id="photo-log-input" accept="image/*" style="display:none" onchange="uploadPhotoLog()" />
+        </div>
+        <div class="log-btn custom" onclick="openCustomModal()"><span class="emoji">✏️</span><span class="label">Custom</span></div>
       </div>
       <div class="card">
         <div class="card-title" id="log-card-title">Today's log</div>
@@ -229,10 +239,20 @@
 <div id="edit-modal" class="modal-overlay hidden">
   <div class="modal">
     <h3 id="edit-modal-title">Edit entry</h3>
-    <p style="font-size:12px;color:#888;margin-bottom:8px;">Time</p>
+    <span class="modal-label">Time</span>
     <input type="time" id="edit-time" />
-    <p style="font-size:12px;color:#888;margin-bottom:8px;">Note (optional)</p>
+    <span class="modal-label">Note (optional)</span>
     <textarea id="edit-note" placeholder="Add a note..."></textarea>
+    <span class="modal-label">Photo (optional)</span>
+    <div id="edit-photo-preview-wrap" class="hidden">
+      <img id="edit-photo-preview" class="photo-preview-img" />
+      <a id="edit-photo-download" download="alvin-photo.jpg" target="_blank" style="font-size:12px;color:#534AB7;display:block;margin-top:4px;">⬇️ Download photo</a>
+    </div>
+    <label class="photo-upload-btn">
+      📷 <span id="edit-photo-btn-text">Add photo</span>
+      <input type="file" id="edit-photo-input" accept="image/*" style="display:none" onchange="handleEditPhotoSelected()" />
+    </label>
+    <div id="edit-uploading" class="hidden" style="font-size:13px;color:#888;text-align:center;margin-top:8px;">Uploading...</div>
     <div class="modal-btns">
       <button class="btn-cancel" onclick="closeEditModal()">Cancel</button>
       <button class="btn-submit" onclick="submitEdit()">Save</button>
@@ -258,6 +278,8 @@
 <script>
   const SUPABASE_URL = 'https://wywiyoskbhpmzlszbdwn.supabase.co'
   const SUPABASE_KEY = 'sb_publishable_4gK3mA5J4f528qQgbCncmw_fqERKeo5'
+  const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/daaqecouj/image/upload'
+  const CLOUDINARY_PRESET = 'familyfxp'
   const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
 
   const LOG_TYPES = {
@@ -269,6 +291,7 @@
     nap_start: { label: 'Nap start', emoji: '😴' },
     nap_end: { label: 'Nap end', emoji: '⏰' },
     medication: { label: 'Medication', emoji: '💊' },
+    photo: { label: 'Photo', emoji: '📷' },
     custom: { label: 'Note', emoji: '📝' },
   }
 
@@ -277,6 +300,8 @@
   let childId = null
   let selectedDate = new Date()
   let editingLogId = null
+  let editingPhotoUrl = null
+  let pendingPhotoUrl = null
   let scheduleData = []
 
   // TOAST
@@ -284,7 +309,7 @@
     const t = document.getElementById('toast')
     t.textContent = msg
     t.classList.add('show')
-    setTimeout(() => t.classList.remove('show'), 2000)
+    setTimeout(() => t.classList.remove('show'), 2500)
   }
 
   // AUTH
@@ -353,6 +378,31 @@
     showToast(`${t.emoji} ${label || t.label} logged!`)
   }
 
+  async function uploadPhotoLog() {
+    const file = document.getElementById('photo-log-input').files[0]
+    if (!file || !childId) return
+    showToast('📷 Uploading...')
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('upload_preset', CLOUDINARY_PRESET)
+    const res = await fetch(CLOUDINARY_URL, { method: 'POST', body: formData })
+    const data = await res.json()
+    if (data.secure_url) {
+      await sb.from('nanny_logs').insert({
+        child_id: childId,
+        logged_by: currentMemberId,
+        type: 'photo',
+        label: 'Photo',
+        photo_url: data.secure_url
+      })
+      loadLogs()
+      showToast('📷 Photo added to log!')
+    } else {
+      showToast('Upload failed — try again')
+    }
+    document.getElementById('photo-log-input').value = ''
+  }
+
   async function loadLogs() {
     if (!childId) return
     const start = new Date(selectedDate); start.setHours(0,0,0,0)
@@ -371,6 +421,7 @@
           <div class="name">${label}</div>
           <div class="time">${time}</div>
           ${log.notes ? `<div class="note">${log.notes}</div>` : ''}
+          ${log.photo_url ? `<img class="log-photo" src="${log.photo_url}" alt="Log photo" /><a class="log-download" href="${log.photo_url}" download="alvin-photo.jpg" target="_blank">⬇️ Download photo</a>` : ''}
         </div>
         <div class="log-actions">
           <button class="btn-edit" onclick="openEditModal(decodeURIComponent('${safeLog}'))">Edit</button>
@@ -380,22 +431,61 @@
     }).join('')
   }
 
+  // EDIT PHOTO
+  async function handleEditPhotoSelected() {
+    const file = document.getElementById('edit-photo-input').files[0]
+    if (!file) return
+    document.getElementById('edit-uploading').classList.remove('hidden')
+    document.getElementById('edit-photo-btn-text').textContent = 'Uploading...'
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('upload_preset', CLOUDINARY_PRESET)
+    const res = await fetch(CLOUDINARY_URL, { method: 'POST', body: formData })
+    const data = await res.json()
+    document.getElementById('edit-uploading').classList.add('hidden')
+    if (data.secure_url) {
+      pendingPhotoUrl = data.secure_url
+      document.getElementById('edit-photo-preview').src = data.secure_url
+      document.getElementById('edit-photo-download').href = data.secure_url
+      document.getElementById('edit-photo-preview-wrap').classList.remove('hidden')
+      document.getElementById('edit-photo-btn-text').textContent = 'Change photo'
+      showToast('📷 Photo ready!')
+    } else {
+      document.getElementById('edit-photo-btn-text').textContent = 'Add photo'
+      showToast('Upload failed — try again')
+    }
+  }
+
   // EDIT
   function openEditModal(logJson) {
     const log = typeof logJson === 'string' ? JSON.parse(logJson) : logJson
     editingLogId = log.id
+    pendingPhotoUrl = null
+    editingPhotoUrl = log.photo_url || null
     const t = LOG_TYPES[log.type] || { label: log.label || log.type }
     const label = log.type === 'custom' ? (log.label || 'Note') : (log.label || t.label)
     document.getElementById('edit-modal-title').textContent = 'Edit — ' + label
     const time = new Date(log.created_at)
     document.getElementById('edit-time').value = `${String(time.getHours()).padStart(2,'0')}:${String(time.getMinutes()).padStart(2,'0')}`
     document.getElementById('edit-note').value = log.notes || ''
+    document.getElementById('edit-photo-input').value = ''
+    document.getElementById('edit-uploading').classList.add('hidden')
+    document.getElementById('edit-photo-btn-text').textContent = log.photo_url ? 'Change photo' : 'Add photo'
+    if (log.photo_url) {
+      document.getElementById('edit-photo-preview').src = log.photo_url
+      document.getElementById('edit-photo-download').href = log.photo_url
+      document.getElementById('edit-photo-preview-wrap').classList.remove('hidden')
+    } else {
+      document.getElementById('edit-photo-preview-wrap').classList.add('hidden')
+    }
     document.getElementById('edit-modal').classList.remove('hidden')
   }
 
   function closeEditModal() {
     document.getElementById('edit-modal').classList.add('hidden')
     editingLogId = null
+    pendingPhotoUrl = null
+    editingPhotoUrl = null
   }
 
   async function submitEdit() {
@@ -405,15 +495,22 @@
     const base = new Date(selectedDate)
     const [h, m] = timeVal.split(':').map(Number)
     base.setHours(h, m, 0, 0)
-    await sb.from('nanny_logs').update({ notes: note || null, created_at: base.toISOString() }).eq('id', editingLogId)
+    const finalPhotoUrl = pendingPhotoUrl || editingPhotoUrl || null
+    await sb.from('nanny_logs').update({
+      notes: note || null,
+      created_at: base.toISOString(),
+      photo_url: finalPhotoUrl
+    }).eq('id', editingLogId)
     closeEditModal()
     loadLogs()
+    showToast('✅ Saved!')
   }
 
   async function deleteLog(id) {
     if (!confirm('Delete this entry?')) return
     await sb.from('nanny_logs').delete().eq('id', id)
     loadLogs()
+    showToast('🗑 Deleted')
   }
 
   // CUSTOM
@@ -552,30 +649,6 @@
       loadMember().then(showApp)
     }
   })
-  async function uploadPhotoLog() {
-    const file = document.getElementById('photo-log-input').files[0]
-    if (!file) return
-    showToast('📷 Uploading photo...')
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('upload_preset', CLOUDINARY_PRESET)
-    const res = await fetch(CLOUDINARY_URL, { method: 'POST', body: formData })
-    const data = await res.json()
-    if (data.secure_url) {
-      await sb.from('nanny_logs').insert({
-        child_id: childId,
-        logged_by: currentMemberId,
-        type: 'custom',
-        label: 'Photo',
-        photo_url: data.secure_url
-      })
-      loadLogs()
-      showToast('📷 Photo added to log!')
-    } else {
-      showToast('Upload failed — try again')
-    }
-    document.getElementById('photo-log-input').value = ''
-  }
 </script>
 </body>
 </html>
