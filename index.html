@@ -18,18 +18,23 @@
     .card { background: white; border-radius: 14px; border: 0.5px solid #eee; padding: 16px; margin-bottom: 12px; }
     .card-title { font-size: 15px; font-weight: 600; color: #111; margin-bottom: 12px; }
     .log-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+    .diaper-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
     .log-btn { background: white; border: 0.5px solid #eee; border-radius: 14px; padding: 20px 10px; text-align: center; cursor: pointer; transition: background 0.1s; }
     .log-btn:active { background: #f0f0f0; }
     .log-btn .emoji { font-size: 30px; display: block; margin-bottom: 8px; }
     .log-btn .label { font-size: 14px; font-weight: 500; color: #111; }
     .log-btn.custom { background: #EEEDFE; border-color: #AFA9EC; }
     .log-btn.custom .label { color: #534AB7; }
-    .log-entry { display: flex; align-items: center; padding: 10px 0; border-bottom: 0.5px solid #f0f0f0; }
+    .log-entry { display: flex; align-items: flex-start; padding: 10px 0; border-bottom: 0.5px solid #f0f0f0; gap: 8px; }
     .log-entry:last-child { border-bottom: none; }
-    .log-entry .emoji { font-size: 18px; margin-right: 10px; }
-    .log-entry .name { flex: 1; font-size: 14px; color: #111; }
-    .log-entry .time { font-size: 12px; color: #888; }
-    .log-entry .note { font-size: 12px; color: #888; margin-top: 3px; margin-left: 28px; }
+    .log-entry .emoji { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
+    .log-entry-body { flex: 1; }
+    .log-entry .name { font-size: 14px; color: #111; }
+    .log-entry .time { font-size: 12px; color: #888; margin-top: 2px; }
+    .log-entry .note { font-size: 12px; color: #888; margin-top: 3px; }
+    .log-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .btn-edit { background: #EEEDFE; border: none; border-radius: 8px; padding: 4px 10px; font-size: 12px; color: #534AB7; cursor: pointer; }
+    .btn-delete { background: #FDECEC; border: none; border-radius: 8px; padding: 4px 10px; font-size: 12px; color: #9C2B2B; cursor: pointer; }
     .empty { font-size: 13px; color: #888; text-align: center; padding: 16px 0; }
     .section-title { font-size: 12px; font-weight: 600; color: #534AB7; margin-bottom: 8px; letter-spacing: 0.5px; }
     .schedule-row { display: flex; padding: 12px 0; border-bottom: 0.5px solid #f0f0f0; }
@@ -40,7 +45,6 @@
     .info-row:last-child { border-bottom: none; }
     .info-label { font-size: 11px; color: #888; margin-bottom: 3px; }
     .info-value { font-size: 14px; color: #111; }
-    .info-value.empty { color: #ccc; }
     .meal-item { padding: 10px 0; border-bottom: 0.5px solid #f0f0f0; }
     .meal-item:last-child { border-bottom: none; }
     .meal-name { font-size: 14px; font-weight: 500; color: #111; }
@@ -48,7 +52,7 @@
     .avoid-card { background: #FDECEC; border-color: #F5B8B8; }
     .avoid-name { font-size: 14px; font-weight: 500; color: #9C2B2B; }
     .thickening-card { background: #FFF8E1; border-color: #F5D98B; }
-    .thickening-card .card-title { color: #8A6D00; }
+    .thickening-card .section-title { color: #8A6D00; }
     .thickening-text { font-size: 14px; color: #5C4900; }
     .med-name { font-size: 14px; font-weight: 600; color: #111; }
     .med-instructions { font-size: 13px; color: #888; margin-top: 3px; }
@@ -62,6 +66,7 @@
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; padding: 24px; z-index: 100; }
     .modal { background: white; border-radius: 16px; padding: 20px; width: 100%; max-width: 400px; }
     .modal h3 { font-size: 16px; font-weight: 600; margin-bottom: 12px; }
+    .modal input[type="time"] { width: 100%; border: 1px solid #ddd; border-radius: 10px; padding: 12px; font-size: 14px; margin-bottom: 12px; font-family: inherit; }
     .modal textarea { width: 100%; border: 1px solid #ddd; border-radius: 10px; padding: 12px; font-size: 14px; min-height: 80px; resize: none; font-family: inherit; }
     .modal-btns { display: flex; gap: 10px; margin-top: 12px; }
     .btn-cancel { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 10px; background: white; font-size: 14px; color: #888; cursor: pointer; }
@@ -100,11 +105,11 @@
     <h1>🧒 Alvin's day</h1>
     <p id="header-subtitle">Loading...</p>
     <div class="tabs">
-      <div class="tab active" onclick="switchTab('log')">📋 Log</div>
-      <div class="tab" onclick="switchTab('schedule')">🕐 Schedule</div>
-      <div class="tab" onclick="switchTab('food')">🍽 Food</div>
-      <div class="tab" onclick="switchTab('medical')">⚕️ Medical</div>
-      <div class="tab" onclick="switchTab('info')">ℹ️ Info</div>
+      <div class="tab active" onclick="switchTab('log', this)">📋 Log</div>
+      <div class="tab" onclick="switchTab('schedule', this)">🕐 Schedule</div>
+      <div class="tab" onclick="switchTab('food', this)">🍽 Food</div>
+      <div class="tab" onclick="switchTab('medical', this)">⚕️ Medical</div>
+      <div class="tab" onclick="switchTab('info', this)">ℹ️ Info</div>
     </div>
   </div>
 
@@ -115,16 +120,24 @@
       <div class="day-nav">
         <button onclick="changeDay(-1)">←</button>
         <span class="day-label" id="day-label">Today</span>
-        <button onclick="changeDay(1)" id="day-next-btn">→</button>
+        <button onclick="changeDay(1)" id="day-next-btn" disabled>→</button>
       </div>
+
+      <!-- Diaper row split -->
+      <div class="diaper-row">
+        <div class="log-btn" onclick="addLog('diaper_wet', 'Diaper - Wet')"><span class="emoji">💧</span><span class="label">Wet</span></div>
+        <div class="log-btn" onclick="addLog('diaper_bm', 'Diaper - BM')"><span class="emoji">💩</span><span class="label">BM</span></div>
+      </div>
+
+      <!-- Rest of buttons -->
       <div class="log-grid">
-        <div class="log-btn" onclick="addLog('diaper')"><span class="emoji">🧷</span><span class="label">Diaper</span></div>
         <div class="log-btn" onclick="addLog('snack')"><span class="emoji">🍎</span><span class="label">Snack</span></div>
         <div class="log-btn" onclick="addLog('lunch')"><span class="emoji">🍽</span><span class="label">Lunch</span></div>
         <div class="log-btn" onclick="addLog('nap_start')"><span class="emoji">😴</span><span class="label">Nap start</span></div>
         <div class="log-btn" onclick="addLog('nap_end')"><span class="emoji">⏰</span><span class="label">Nap end</span></div>
-        <div class="log-btn custom" onclick="openCustomModal()"><span class="emoji">✏️</span><span class="label">Custom</span></div>
+        <div class="log-btn custom" onclick="openCustomModal()" style="grid-column: span 2;"><span class="emoji">✏️</span><span class="label">Custom</span></div>
       </div>
+
       <div class="card">
         <div class="card-title" id="log-card-title">Today's log</div>
         <div id="log-list"><div class="empty">No events logged yet</div></div>
@@ -196,7 +209,7 @@
       </div>
       <div class="card">
         <div class="section-title">HOUSE RULES</div>
-        <div id="house-rules" class="info-value">Loading...</div>
+        <div id="house-rules" class="info-value" style="white-space:pre-wrap;">Loading...</div>
       </div>
       <div class="card emergency-card">
         <div class="section-title">🚨 EMERGENCY CONTACTS</div>
@@ -204,6 +217,21 @@
       </div>
     </div>
 
+  </div>
+</div>
+
+<!-- EDIT LOG MODAL -->
+<div id="edit-modal" class="modal-overlay hidden">
+  <div class="modal">
+    <h3 id="edit-modal-title">Edit entry</h3>
+    <p style="font-size:12px;color:#888;margin-bottom:8px;">Time</p>
+    <input type="time" id="edit-time" />
+    <p style="font-size:12px;color:#888;margin-bottom:8px;">Note (optional)</p>
+    <textarea id="edit-note" placeholder="Add a note..."></textarea>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeEditModal()">Cancel</button>
+      <button class="btn-submit" onclick="submitEdit()">Save</button>
+    </div>
   </div>
 </div>
 
@@ -225,6 +253,8 @@
   const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
 
   const LOG_TYPES = {
+    diaper_wet: { label: 'Diaper - Wet', emoji: '💧' },
+    diaper_bm: { label: 'Diaper - BM', emoji: '💩' },
     diaper: { label: 'Diaper', emoji: '🧷' },
     snack: { label: 'Snack', emoji: '🍎' },
     lunch: { label: 'Lunch', emoji: '🍽' },
@@ -237,6 +267,7 @@
   let currentMemberId = null
   let childId = null
   let selectedDate = new Date()
+  let editingLogId = null
 
   // AUTH
   async function doLogin() {
@@ -269,9 +300,9 @@
   }
 
   // TABS
-  function switchTab(tab) {
+  function switchTab(tab, el) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
-    event.target.classList.add('active')
+    el.classList.add('active')
     ;['log', 'schedule', 'food', 'medical', 'info'].forEach(t => {
       document.getElementById(`tab-${t}`).classList.toggle('hidden', t !== tab)
     })
@@ -284,10 +315,13 @@
   }
 
   function changeDay(delta) {
-    selectedDate.setDate(selectedDate.getDate() + delta)
+    const newDate = new Date(selectedDate)
+    newDate.setDate(newDate.getDate() + delta)
+    if (delta > 0 && isToday(newDate)) return
+    selectedDate = newDate
     const label = isToday(selectedDate) ? 'Today' : selectedDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
     document.getElementById('day-label').textContent = label
-    document.getElementById('log-card-title').textContent = label + "'s log"
+    document.getElementById('log-card-title').textContent = isToday(selectedDate) ? "Today's log" : label + "'s log"
     document.getElementById('day-next-btn').disabled = isToday(selectedDate)
     loadLogs()
   }
@@ -310,14 +344,61 @@
       const t = LOG_TYPES[log.type] || { label: log.label || log.type, emoji: '📝' }
       const label = log.type === 'custom' ? (log.label || 'Note') : t.label
       const time = new Date(log.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+      const safeLog = encodeURIComponent(JSON.stringify(log))
       return `<div class="log-entry">
         <span class="emoji">${t.emoji}</span>
-        <div style="flex:1"><div class="name">${label}</div>${log.notes ? `<div class="note">${log.notes}</div>` : ''}</div>
-        <span class="time">${time}</span>
+        <div class="log-entry-body">
+          <div class="name">${label}</div>
+          <div class="time">${time}</div>
+          ${log.notes ? `<div class="note">${log.notes}</div>` : ''}
+        </div>
+        <div class="log-actions">
+          <button class="btn-edit" onclick="openEditModal(decodeURIComponent('${safeLog}'))">Edit</button>
+          <button class="btn-delete" onclick="deleteLog(${log.id})">Delete</button>
+        </div>
       </div>`
     }).join('')
   }
 
+  // EDIT
+  function openEditModal(logJson) {
+    const log = typeof logJson === 'string' ? JSON.parse(logJson) : logJson
+    editingLogId = log.id
+    const t = LOG_TYPES[log.type] || { label: log.label || log.type }
+    const label = log.type === 'custom' ? (log.label || 'Note') : t.label
+    document.getElementById('edit-modal-title').textContent = 'Edit — ' + label
+    const time = new Date(log.created_at)
+    const hh = String(time.getHours()).padStart(2, '0')
+    const mm = String(time.getMinutes()).padStart(2, '0')
+    document.getElementById('edit-time').value = `${hh}:${mm}`
+    document.getElementById('edit-note').value = log.notes || ''
+    document.getElementById('edit-modal').classList.remove('hidden')
+  }
+
+  function closeEditModal() {
+    document.getElementById('edit-modal').classList.add('hidden')
+    editingLogId = null
+  }
+
+  async function submitEdit() {
+    if (!editingLogId) return
+    const timeVal = document.getElementById('edit-time').value
+    const note = document.getElementById('edit-note').value.trim()
+    const base = new Date(selectedDate)
+    const [h, m] = timeVal.split(':').map(Number)
+    base.setHours(h, m, 0, 0)
+    await sb.from('nanny_logs').update({ notes: note || null, created_at: base.toISOString() }).eq('id', editingLogId)
+    closeEditModal()
+    loadLogs()
+  }
+
+  async function deleteLog(id) {
+    if (!confirm('Delete this entry?')) return
+    await sb.from('nanny_logs').delete().eq('id', id)
+    loadLogs()
+  }
+
+  // CUSTOM
   function openCustomModal() { document.getElementById('custom-modal').classList.remove('hidden') }
   function closeCustomModal() { document.getElementById('custom-modal').classList.add('hidden'); document.getElementById('custom-text').value = '' }
   async function submitCustomLog() {
@@ -400,7 +481,7 @@
     document.getElementById('emergency-contacts').textContent = data?.emergency_contacts || 'Not set'
   }
 
-  // Init — check if already logged in
+  // Init
   sb.auth.getSession().then(({ data }) => {
     if (data.session?.user) {
       currentUser = data.session.user
