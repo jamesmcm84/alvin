@@ -376,6 +376,22 @@
     loadLogs()
     const t = LOG_TYPES[type] || { label: label || type, emoji: '📝' }
     showToast(`${t.emoji} ${label || t.label} logged!`)
+    notifyParents(label || t.label)
+  }
+
+  async function notifyParents(friendlyName) {
+    const { data: parents } = await sb.from('members').select('push_token').in('role', ['admin', 'adult']).not('push_token', 'is', null)
+    if (!parents || parents.length === 0) return
+    await fetch('https://exp.host/--/api/v2/push/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(parents.map(p => ({
+        to: p.push_token,
+        sound: 'default',
+        title: "🧒 Alvin's day",
+        body: `Brynn logged: ${friendlyName}`,
+      })))
+    })
   }
 
   async function uploadPhotoLog() {
