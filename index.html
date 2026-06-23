@@ -384,7 +384,7 @@ if (!childId) return
     const { data: parents } = await sb.from('members').select('push_token').in('role', ['admin', 'adult']).not('push_token', 'is', null)
     if (!parents || parents.length === 0) return
     console.log('Sending to:', parents.map(p => p.push_token))
-    await fetch('https://exp.host/--/api/v2/push/send', {
+    await fetch('https://exp.host/--/api/v2/push/send', {       mode: 'no-cors',
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(parents.map(p => ({
