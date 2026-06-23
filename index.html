@@ -407,7 +407,7 @@
     if (!childId) return
     const start = new Date(selectedDate); start.setHours(0,0,0,0)
     const end = new Date(selectedDate); end.setHours(23,59,59,999)
-    const { data } = await sb.from('nanny_logs').select('*').eq('child_id', childId).gte('created_at', start.toISOString()).lte('created_at', end.toISOString()).order('created_at', { ascending: false })
+    const { data } = await sb.from('nanny_logs').select('*').eq('child_id', childId).gte('created_at', start.toISOString()).lte('created_at', end.toISOString()).order('created_at', { ascending: true })
     const el = document.getElementById('log-list')
     if (!data || data.length === 0) { el.innerHTML = '<div class="empty">No events logged yet</div>'; return }
     el.innerHTML = data.map(log => {
