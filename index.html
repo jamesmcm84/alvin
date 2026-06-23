@@ -413,4 +413,238 @@
     if (!childId) return
     const start = new Date(selectedDate); start.setHours(0,0,0,0)
     const end = new Date(selectedDate); end.setHours(23,59,59,999)
-    const { data }
+    const { data } = await sb.from('nanny_logs').select('*').eq('child_id', childId).gte('created_at', start.toISOString()).lte('created_at', end.toISOString()).order('created_at', { ascending: false })
+    const el = document.getElementById('log-list')
+    if (!data || data.length === 0) { el.innerHTML = '<div class="empty">No events logged yet</div>'; return }
+    el.innerHTML = data.map(log => {
+      const t = LOG_TYPES[log.type] || { label: log.label || log.type, emoji: '📝' }
+      const label = log.type === 'custom' ? (log.label || 'Note') : (log.label || t.label)
+      const time = new Date(log.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+      const safeLog = encodeURIComponent(JSON.stringify(log))
+      return `<div class="log-entry">
+        <span class="emoji">${t.emoji}</span>
+        <div class="log-entry-body">
+          <div class="name">${label}</div>
+          <div class="time">${time}</div>
+          ${log.notes ? `<div class="note">${log.notes}</div>` : ''}
+          ${log.photo_url ? `<img class="log-photo" src="${log.photo_url}" alt="Log photo" /><a class="log-download" href="${log.photo_url}" download="alvin-photo.jpg" target="_blank">⬇️ Download photo</a>` : ''}
+        </div>
+        <div class="log-actions">
+          <button class="btn-edit" onclick="openEditModal(decodeURIComponent('${safeLog}'))">Edit</button>
+          <button class="btn-delete" onclick="deleteLog(${log.id})">Delete</button>
+        </div>
+      </div>`
+    }).join('')
+  }
+
+  async function handleEditPhotoSelected() {
+    const file = document.getElementById('edit-photo-input').files[0]
+    if (!file) return
+    document.getElementById('edit-uploading').classList.remove('hidden')
+    document.getElementById('edit-photo-btn-text').textContent = 'Uploading...'
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('upload_preset', CLOUDINARY_PRESET)
+    const res = await fetch(CLOUDINARY_URL, { method: 'POST', body: formData })
+    const data = await res.json()
+    document.getElementById('edit-uploading').classList.add('hidden')
+    if (data.secure_url) {
+      pendingPhotoUrl = data.secure_url
+      document.getElementById('edit-photo-preview').src = data.secure_url
+      document.getElementById('edit-photo-download').href = data.secure_url
+      document.getElementById('edit-photo-preview-wrap').classList.remove('hidden')
+      document.getElementById('edit-photo-btn-text').textContent = 'Change photo'
+      showToast('📷 Photo ready!')
+    } else {
+      document.getElementById('edit-photo-btn-text').textContent = 'Add photo'
+      showToast('Upload failed — try again')
+    }
+  }
+
+  function openEditModal(logJson) {
+    const log = typeof logJson === 'string' ? JSON.parse(logJson) : logJson
+    editingLogId = log.id
+    pendingPhotoUrl = null
+    editingPhotoUrl = log.photo_url || null
+    const t = LOG_TYPES[log.type] || { label: log.label || log.type }
+    const label = log.type === 'custom' ? (log.label || 'Note') : (log.label || t.label)
+    document.getElementById('edit-modal-title').textContent = 'Edit — ' + label
+    const time = new Date(log.created_at)
+    document.getElementById('edit-time').value = `${String(time.getHours()).padStart(2,'0')}:${String(time.getMinutes()).padStart(2,'0')}`
+    document.getElementById('edit-note').value = log.notes || ''
+    document.getElementById('edit-photo-input').value = ''
+    document.getElementById('edit-uploading').classList.add('hidden')
+    document.getElementById('edit-photo-btn-text').textContent = log.photo_url ? 'Change photo' : 'Add photo'
+    if (log.photo_url) {
+      document.getElementById('edit-photo-preview').src = log.photo_url
+      document.getElementById('edit-photo-download').href = log.photo_url
+      document.getElementById('edit-photo-preview-wrap').classList.remove('hidden')
+    } else {
+      document.getElementById('edit-photo-preview-wrap').classList.add('hidden')
+    }
+    document.getElementById('edit-modal').classList.remove('hidden')
+  }
+
+  function closeEditModal() {
+    document.getElementById('edit-modal').classList.add('hidden')
+    editingLogId = null
+    pendingPhotoUrl = null
+    editingPhotoUrl = null
+  }
+
+  async function submitEdit() {
+    if (!editingLogId) return
+    const timeVal = document.getElementById('edit-time').value
+    const note = document.getElementById('edit-note').value.trim()
+    const base = new Date(selectedDate)
+    const [h, m] = timeVal.split(':').map(Number)
+    base.setHours(h, m, 0, 0)
+    const finalPhotoUrl = pendingPhotoUrl || editingPhotoUrl || null
+    await sb.from('nanny_logs').update({ notes: note || null, created_at: base.toISOString(), photo_url: finalPhotoUrl }).eq('id', editingLogId)
+    closeEditModal()
+    loadLogs()
+    showToast('✅ Saved!')
+  }
+
+  async function deleteLog(id) {
+    if (!confirm('Delete this entry?')) return
+    await sb.from('nanny_logs').delete().eq('id', id)
+    loadLogs()
+    showToast('🗑 Deleted')
+  }
+
+  function openCustomModal() { document.getElementById('custom-modal').classList.remove('hidden') }
+  function closeCustomModal() { document.getElementById('custom-modal').classList.add('hidden'); document.getElementById('custom-text').value = '' }
+  async function submitCustomLog() {
+    const text = document.getElementById('custom-text').value.trim()
+    if (!text) return
+    await addLog('custom', text)
+    closeCustomModal()
+  }
+
+  function parseScheduleTime(timeLabel) {
+    if (!timeLabel) return null
+    const clean = timeLabel.trim().toUpperCase()
+    const match = clean.match(/(\d+):(\d+)\s*(AM|PM)?/)
+    if (!match) return null
+    let h = parseInt(match[1])
+    const m = parseInt(match[2])
+    const period = match[3]
+    if (period === 'PM' && h !== 12) h += 12
+    if (period === 'AM' && h === 12) h = 0
+    return h * 60 + m
+  }
+
+  function updateScheduleHighlight() {
+    if (!scheduleData.length) return
+    const now = new Date()
+    const nowMinutes = now.getHours() * 60 + now.getMinutes()
+    const rows = document.querySelectorAll('.schedule-row')
+    rows.forEach((row, i) => {
+      const startMin = parseScheduleTime(scheduleData[i]?.time_label)
+      const nextMin = i + 1 < scheduleData.length ? parseScheduleTime(scheduleData[i+1]?.time_label) : 24 * 60
+      const isActive = startMin !== null && nowMinutes >= startMin && nowMinutes < nextMin
+      row.classList.toggle('active', isActive)
+      const badge = row.querySelector('.schedule-now-badge')
+      if (isActive && !badge) {
+        row.querySelector('.schedule-activity').insertAdjacentHTML('afterend', '<span class="schedule-now-badge">Now</span>')
+      } else if (!isActive && badge) {
+        badge.remove()
+      }
+    })
+  }
+
+  async function loadAllData() {
+    loadSchedule()
+    loadTherapies()
+    loadFood()
+    loadMedical()
+    loadInfo()
+  }
+
+  async function loadSchedule() {
+    const { data } = await sb.from('nanny_schedule').select('*').eq('child_id', childId).order('sort_order')
+    scheduleData = data || []
+    const el = document.getElementById('schedule-list')
+    if (!scheduleData.length) { el.innerHTML = '<div class="empty">No schedule added yet</div>'; return }
+    el.innerHTML = scheduleData.map(item => `
+      <div class="schedule-row">
+        <span class="schedule-time">${item.time_label}</span>
+        <div>
+          <div class="schedule-activity">${item.activity}</div>
+          ${item.notes ? `<div class="meal-note">${item.notes}</div>` : ''}
+        </div>
+      </div>`).join('')
+    updateScheduleHighlight()
+  }
+
+  async function loadTherapies() {
+    const { data } = await sb.from('nanny_therapies').select('*').eq('child_id', childId).order('sort_order')
+    const el = document.getElementById('therapy-list')
+    if (!data || data.length === 0) { el.innerHTML = '<div class="empty">No therapies added yet</div>'; return }
+    el.innerHTML = data.map(t => `<div class="therapy-row"><div class="therapy-day">${t.day_of_week}s ${t.time_label} — ${t.therapy_name}</div>${t.provider_name ? `<div class="therapy-provider">with ${t.provider_name}</div>` : ''}</div>`).join('')
+  }
+
+  async function loadFood() {
+    const { data: meals } = await sb.from('nanny_meals').select('*').eq('child_id', childId).order('sort_order')
+    const { data: foodInfo } = await sb.from('nanny_food_info').select('*').eq('child_id', childId).single()
+    if (foodInfo?.thickening_instructions) {
+      const tc = document.getElementById('thickening-card')
+      tc.className = 'card thickening-card'
+      tc.innerHTML = `<div class="section-title">🥤 THICKENING DRINKS</div><div class="thickening-text">${foodInfo.thickening_instructions}</div>`
+    }
+    const snacks = (meals || []).filter(m => m.category === 'snack')
+    const lunches = (meals || []).filter(m => m.category === 'lunch')
+    const avoid = (meals || []).filter(m => m.category === 'avoid')
+    document.getElementById('snack-list').innerHTML = snacks.length === 0 ? '<div class="empty">Nothing added yet</div>' : snacks.map(m => `<div class="meal-item"><div class="meal-name">${m.meal_name}</div>${m.notes ? `<div class="meal-note">${m.notes}</div>` : ''}</div>`).join('')
+    document.getElementById('lunch-list').innerHTML = lunches.length === 0 ? '<div class="empty">Nothing added yet</div>' : lunches.map(m => `<div class="meal-item"><div class="meal-name">${m.meal_name}</div>${m.notes ? `<div class="meal-note">${m.notes}</div>` : ''}</div>`).join('')
+    document.getElementById('avoid-list').innerHTML = avoid.length === 0 ? '<div class="empty" style="color:#9C2B2B">Nothing added yet</div>' : avoid.map(m => `<div class="meal-item"><div class="avoid-name">${m.meal_name}</div>${m.notes ? `<div class="meal-note" style="color:#9C2B2B">${m.notes}</div>` : ''}</div>`).join('')
+  }
+
+  async function loadMedical() {
+    const { data: med } = await sb.from('nanny_medical').select('*').eq('child_id', childId).single()
+    const { data: meds } = await sb.from('nanny_medications').select('*').eq('child_id', childId).order('sort_order')
+    document.getElementById('allergies-text').textContent = med?.allergies || 'No known allergies'
+    document.getElementById('med-list').innerHTML = !meds || meds.length === 0
+      ? '<div class="empty">No medications</div>'
+      : meds.map(m => `
+        <div class="med-btn">
+          <div class="med-btn-left">
+            <div class="med-btn-name">💊 ${m.med_name}</div>
+            ${m.instructions ? `<div class="med-btn-instructions">${m.instructions}</div>` : ''}
+          </div>
+          <button class="med-btn-log" onclick="addLog('medication', '${m.med_name.replace(/'/g, "\\'")} given')">Log it</button>
+        </div>`).join('')
+    document.getElementById('pediatrician-info').innerHTML = `
+      <div class="info-row"><div class="info-label">Name</div><div class="info-value">${med?.pediatrician_name || 'Not set'}</div></div>
+      <div class="info-row"><div class="info-label">Phone</div><div class="info-value">${med?.pediatrician_phone ? `<a href="tel:${med.pediatrician_phone}">${med.pediatrician_phone}</a>` : 'Not set'}</div></div>
+      <div class="info-row"><div class="info-label">Address</div><div class="info-value">${med?.pediatrician_address || 'Not set'}</div></div>`
+    document.getElementById('hospital-info').innerHTML = `
+      <div class="info-row"><div class="info-label">Name</div><div class="info-value">${med?.hospital_name || 'Not set'}</div></div>
+      <div class="info-row"><div class="info-label">Phone</div><div class="info-value">${med?.hospital_phone ? `<a href="tel:${med.hospital_phone}">${med.hospital_phone}</a>` : 'Not set'}</div></div>
+      <div class="info-row"><div class="info-label">Address</div><div class="info-value">${med?.hospital_address || 'Not set'}</div></div>`
+    document.getElementById('insurance-info').innerHTML = `
+      <div class="info-row"><div class="info-label">Provider</div><div class="info-value">${med?.insurance_provider || 'Not set'}</div></div>
+      <div class="info-row"><div class="info-label">Policy number</div><div class="info-value">${med?.insurance_policy_number || 'Not set'}</div></div>
+      <div class="info-row"><div class="info-label">Phone</div><div class="info-value">${med?.insurance_phone || 'Not set'}</div></div>`
+  }
+
+  async function loadInfo() {
+    const { data } = await sb.from('nanny_info').select('*').limit(1).single()
+    document.getElementById('home-address').textContent = data?.home_address || 'Not set'
+    document.getElementById('wifi-info').innerHTML = `
+      <div class="info-row"><div class="info-label">📶 Network</div><div class="info-value">${data?.wifi_network || 'Not set'}</div></div>
+      <div class="info-row"><div class="info-label">🔑 Password</div><div class="info-value">${data?.wifi_password || 'Not set'}</div></div>`
+    document.getElementById('house-rules').textContent = data?.house_rules || 'Not set'
+    document.getElementById('emergency-contacts').textContent = data?.emergency_contacts || 'Not set'
+  }
+
+  sb.auth.getSession().then(({ data }) => {
+    if (data.session?.user) {
+      currentUser = data.session.user
+      loadMember().then(showApp)
+    }
+  })
+</script>
+</body>
+</html>
