@@ -552,6 +552,30 @@
       loadMember().then(showApp)
     }
   })
+  async function uploadPhotoLog() {
+    const file = document.getElementById('photo-log-input').files[0]
+    if (!file) return
+    showToast('📷 Uploading photo...')
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('upload_preset', CLOUDINARY_PRESET)
+    const res = await fetch(CLOUDINARY_URL, { method: 'POST', body: formData })
+    const data = await res.json()
+    if (data.secure_url) {
+      await sb.from('nanny_logs').insert({
+        child_id: childId,
+        logged_by: currentMemberId,
+        type: 'custom',
+        label: 'Photo',
+        photo_url: data.secure_url
+      })
+      loadLogs()
+      showToast('📷 Photo added to log!')
+    } else {
+      showToast('Upload failed — try again')
+    }
+    document.getElementById('photo-log-input').value = ''
+  }
 </script>
 </body>
 </html>
