@@ -37,10 +37,13 @@
     .btn-delete { background: #FDECEC; border: none; border-radius: 8px; padding: 4px 10px; font-size: 12px; color: #9C2B2B; cursor: pointer; }
     .empty { font-size: 13px; color: #888; text-align: center; padding: 16px 0; }
     .section-title { font-size: 12px; font-weight: 600; color: #534AB7; margin-bottom: 8px; letter-spacing: 0.5px; }
-    .schedule-row { display: flex; padding: 12px 0; border-bottom: 0.5px solid #f0f0f0; }
-    .schedule-row:last-child { border-bottom: none; }
-    .schedule-time { font-size: 13px; font-weight: 600; color: #534AB7; width: 75px; flex-shrink: 0; }
+    .schedule-row { display: flex; padding: 12px; border-radius: 10px; margin-bottom: 4px; align-items: flex-start; }
+    .schedule-row.active { background: #EEEDFE; border: 1.5px solid #534AB7; }
+    .schedule-time { font-size: 13px; font-weight: 600; color: #534AB7; width: 75px; flex-shrink: 0; margin-top: 2px; }
+    .schedule-row.active .schedule-time { color: #26215C; }
     .schedule-activity { font-size: 14px; color: #111; }
+    .schedule-row.active .schedule-activity { font-weight: 600; color: #26215C; }
+    .schedule-now-badge { font-size: 11px; font-weight: 600; color: #534AB7; background: #534AB7; color: white; border-radius: 20px; padding: 2px 8px; margin-left: 8px; display: inline-block; }
     .info-row { padding: 10px 0; border-bottom: 0.5px solid #f0f0f0; }
     .info-row:last-child { border-bottom: none; }
     .info-label { font-size: 11px; color: #888; margin-bottom: 3px; }
@@ -54,8 +57,13 @@
     .thickening-card { background: #FFF8E1; border-color: #F5D98B; }
     .thickening-card .section-title { color: #8A6D00; }
     .thickening-text { font-size: 14px; color: #5C4900; }
-    .med-name { font-size: 14px; font-weight: 600; color: #111; }
-    .med-instructions { font-size: 13px; color: #888; margin-top: 3px; }
+    .med-btn { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-radius: 10px; border: 1px solid #eee; margin-bottom: 8px; cursor: pointer; background: white; transition: background 0.1s; }
+    .med-btn:last-child { margin-bottom: 0; }
+    .med-btn:active { background: #f5f5f5; }
+    .med-btn-left { flex: 1; }
+    .med-btn-name { font-size: 14px; font-weight: 600; color: #111; }
+    .med-btn-instructions { font-size: 12px; color: #888; margin-top: 3px; }
+    .med-btn-log { background: #534AB7; color: white; border: none; border-radius: 20px; padding: 6px 14px; font-size: 12px; font-weight: 500; cursor: pointer; flex-shrink: 0; margin-left: 10px; }
     .emergency-card { background: #FDECEC; border-color: #F5B8B8; }
     .emergency-card .section-title { color: #9C2B2B; }
     .emergency-text { font-size: 14px; color: #9C2B2B; white-space: pre-wrap; }
@@ -79,10 +87,12 @@
     .login-card button { width: 100%; padding: 14px; border: none; border-radius: 10px; background: #534AB7; color: white; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 8px; }
     .login-error { color: #E24B4A; font-size: 13px; margin-bottom: 10px; }
     .hidden { display: none; }
-    .therapy-row { padding: 10px 0; border-bottom: 0.5px solid #f0f0f0; }
+    .therapy-row { padding: 10px 0; border-bottom: 0.5px solid #d8d4f5; }
     .therapy-row:last-child { border-bottom: none; }
     .therapy-day { font-size: 14px; font-weight: 600; color: #26215C; }
     .therapy-provider { font-size: 13px; color: #534AB7; margin-top: 2px; }
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #26215C; color: white; padding: 10px 20px; border-radius: 20px; font-size: 14px; font-weight: 500; z-index: 200; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+    .toast.show { opacity: 1; }
   </style>
 </head>
 <body>
@@ -122,14 +132,10 @@
         <span class="day-label" id="day-label">Today</span>
         <button onclick="changeDay(1)" id="day-next-btn" disabled>→</button>
       </div>
-
-      <!-- Diaper row split -->
       <div class="diaper-row">
         <div class="log-btn" onclick="addLog('diaper_wet', 'Diaper - Wet')"><span class="emoji">💧</span><span class="label">Wet</span></div>
         <div class="log-btn" onclick="addLog('diaper_bm', 'Diaper - BM')"><span class="emoji">💩</span><span class="label">BM</span></div>
       </div>
-
-      <!-- Rest of buttons -->
       <div class="log-grid">
         <div class="log-btn" onclick="addLog('snack')"><span class="emoji">🍎</span><span class="label">Snack</span></div>
         <div class="log-btn" onclick="addLog('lunch')"><span class="emoji">🍽</span><span class="label">Lunch</span></div>
@@ -137,7 +143,6 @@
         <div class="log-btn" onclick="addLog('nap_end')"><span class="emoji">⏰</span><span class="label">Nap end</span></div>
         <div class="log-btn custom" onclick="openCustomModal()" style="grid-column: span 2;"><span class="emoji">✏️</span><span class="label">Custom</span></div>
       </div>
-
       <div class="card">
         <div class="card-title" id="log-card-title">Today's log</div>
         <div id="log-list"><div class="empty">No events logged yet</div></div>
@@ -180,7 +185,7 @@
         <div id="allergies-text" class="info-value">Loading...</div>
       </div>
       <div class="card">
-        <div class="section-title">MEDICATIONS</div>
+        <div class="section-title">MEDICATIONS — tap to log</div>
         <div id="med-list"><div class="empty">Loading...</div></div>
       </div>
       <div class="card">
@@ -247,6 +252,9 @@
   </div>
 </div>
 
+<!-- TOAST -->
+<div id="toast" class="toast"></div>
+
 <script>
   const SUPABASE_URL = 'https://wywiyoskbhpmzlszbdwn.supabase.co'
   const SUPABASE_KEY = 'sb_publishable_4gK3mA5J4f528qQgbCncmw_fqERKeo5'
@@ -260,6 +268,7 @@
     lunch: { label: 'Lunch', emoji: '🍽' },
     nap_start: { label: 'Nap start', emoji: '😴' },
     nap_end: { label: 'Nap end', emoji: '⏰' },
+    medication: { label: 'Medication', emoji: '💊' },
     custom: { label: 'Note', emoji: '📝' },
   }
 
@@ -268,6 +277,15 @@
   let childId = null
   let selectedDate = new Date()
   let editingLogId = null
+  let scheduleData = []
+
+  // TOAST
+  function showToast(msg) {
+    const t = document.getElementById('toast')
+    t.textContent = msg
+    t.classList.add('show')
+    setTimeout(() => t.classList.remove('show'), 2000)
+  }
 
   // AUTH
   async function doLogin() {
@@ -297,6 +315,7 @@
     document.getElementById('app-screen').classList.remove('hidden')
     loadAllData()
     loadLogs()
+    setInterval(updateScheduleHighlight, 60000)
   }
 
   // TABS
@@ -310,8 +329,7 @@
 
   // DATE NAV
   function isToday(date) {
-    const t = new Date()
-    return date.toDateString() === t.toDateString()
+    return date.toDateString() === new Date().toDateString()
   }
 
   function changeDay(delta) {
@@ -331,6 +349,8 @@
     if (!childId) return
     await sb.from('nanny_logs').insert({ child_id: childId, logged_by: currentMemberId, type, label: label || null })
     loadLogs()
+    const t = LOG_TYPES[type] || { label: label || type, emoji: '📝' }
+    showToast(`${t.emoji} ${label || t.label} logged!`)
   }
 
   async function loadLogs() {
@@ -342,7 +362,7 @@
     if (!data || data.length === 0) { el.innerHTML = '<div class="empty">No events logged yet</div>'; return }
     el.innerHTML = data.map(log => {
       const t = LOG_TYPES[log.type] || { label: log.label || log.type, emoji: '📝' }
-      const label = log.type === 'custom' ? (log.label || 'Note') : t.label
+      const label = log.type === 'custom' ? (log.label || 'Note') : (log.label || t.label)
       const time = new Date(log.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
       const safeLog = encodeURIComponent(JSON.stringify(log))
       return `<div class="log-entry">
@@ -365,12 +385,10 @@
     const log = typeof logJson === 'string' ? JSON.parse(logJson) : logJson
     editingLogId = log.id
     const t = LOG_TYPES[log.type] || { label: log.label || log.type }
-    const label = log.type === 'custom' ? (log.label || 'Note') : t.label
+    const label = log.type === 'custom' ? (log.label || 'Note') : (log.label || t.label)
     document.getElementById('edit-modal-title').textContent = 'Edit — ' + label
     const time = new Date(log.created_at)
-    const hh = String(time.getHours()).padStart(2, '0')
-    const mm = String(time.getMinutes()).padStart(2, '0')
-    document.getElementById('edit-time').value = `${hh}:${mm}`
+    document.getElementById('edit-time').value = `${String(time.getHours()).padStart(2,'0')}:${String(time.getMinutes()).padStart(2,'0')}`
     document.getElementById('edit-note').value = log.notes || ''
     document.getElementById('edit-modal').classList.remove('hidden')
   }
@@ -408,7 +426,40 @@
     closeCustomModal()
   }
 
-  // LOAD ALL STATIC DATA
+  // SCHEDULE HIGHLIGHT
+  function parseScheduleTime(timeLabel) {
+    if (!timeLabel) return null
+    const clean = timeLabel.trim().toUpperCase()
+    const match = clean.match(/(\d+):(\d+)\s*(AM|PM)?/)
+    if (!match) return null
+    let h = parseInt(match[1])
+    const m = parseInt(match[2])
+    const period = match[3]
+    if (period === 'PM' && h !== 12) h += 12
+    if (period === 'AM' && h === 12) h = 0
+    return h * 60 + m
+  }
+
+  function updateScheduleHighlight() {
+    if (!scheduleData.length) return
+    const now = new Date()
+    const nowMinutes = now.getHours() * 60 + now.getMinutes()
+    const rows = document.querySelectorAll('.schedule-row')
+    rows.forEach((row, i) => {
+      const startMin = parseScheduleTime(scheduleData[i]?.time_label)
+      const nextMin = i + 1 < scheduleData.length ? parseScheduleTime(scheduleData[i+1]?.time_label) : 24 * 60
+      const isActive = startMin !== null && nowMinutes >= startMin && nowMinutes < nextMin
+      row.classList.toggle('active', isActive)
+      const badge = row.querySelector('.schedule-now-badge')
+      if (isActive && !badge) {
+        row.querySelector('.schedule-activity').insertAdjacentHTML('afterend', '<span class="schedule-now-badge">Now</span>')
+      } else if (!isActive && badge) {
+        badge.remove()
+      }
+    })
+  }
+
+  // LOAD ALL DATA
   async function loadAllData() {
     loadSchedule()
     loadTherapies()
@@ -419,9 +470,18 @@
 
   async function loadSchedule() {
     const { data } = await sb.from('nanny_schedule').select('*').eq('child_id', childId).order('sort_order')
+    scheduleData = data || []
     const el = document.getElementById('schedule-list')
-    if (!data || data.length === 0) { el.innerHTML = '<div class="empty">No schedule added yet</div>'; return }
-    el.innerHTML = data.map(item => `<div class="schedule-row"><span class="schedule-time">${item.time_label}</span><div><div class="schedule-activity">${item.activity}</div>${item.notes ? `<div class="meal-note">${item.notes}</div>` : ''}</div></div>`).join('')
+    if (!scheduleData.length) { el.innerHTML = '<div class="empty">No schedule added yet</div>'; return }
+    el.innerHTML = scheduleData.map(item => `
+      <div class="schedule-row">
+        <span class="schedule-time">${item.time_label}</span>
+        <div>
+          <div class="schedule-activity">${item.activity}</div>
+          ${item.notes ? `<div class="meal-note">${item.notes}</div>` : ''}
+        </div>
+      </div>`).join('')
+    updateScheduleHighlight()
   }
 
   async function loadTherapies() {
@@ -434,17 +494,14 @@
   async function loadFood() {
     const { data: meals } = await sb.from('nanny_meals').select('*').eq('child_id', childId).order('sort_order')
     const { data: foodInfo } = await sb.from('nanny_food_info').select('*').eq('child_id', childId).single()
-
     if (foodInfo?.thickening_instructions) {
       const tc = document.getElementById('thickening-card')
       tc.className = 'card thickening-card'
       tc.innerHTML = `<div class="section-title">🥤 THICKENING DRINKS</div><div class="thickening-text">${foodInfo.thickening_instructions}</div>`
     }
-
     const snacks = (meals || []).filter(m => m.category === 'snack')
     const lunches = (meals || []).filter(m => m.category === 'lunch')
     const avoid = (meals || []).filter(m => m.category === 'avoid')
-
     document.getElementById('snack-list').innerHTML = snacks.length === 0 ? '<div class="empty">Nothing added yet</div>' : snacks.map(m => `<div class="meal-item"><div class="meal-name">${m.meal_name}</div>${m.notes ? `<div class="meal-note">${m.notes}</div>` : ''}</div>`).join('')
     document.getElementById('lunch-list').innerHTML = lunches.length === 0 ? '<div class="empty">Nothing added yet</div>' : lunches.map(m => `<div class="meal-item"><div class="meal-name">${m.meal_name}</div>${m.notes ? `<div class="meal-note">${m.notes}</div>` : ''}</div>`).join('')
     document.getElementById('avoid-list').innerHTML = avoid.length === 0 ? '<div class="empty" style="color:#9C2B2B">Nothing added yet</div>' : avoid.map(m => `<div class="meal-item"><div class="avoid-name">${m.meal_name}</div>${m.notes ? `<div class="meal-note" style="color:#9C2B2B">${m.notes}</div>` : ''}</div>`).join('')
@@ -453,10 +510,17 @@
   async function loadMedical() {
     const { data: med } = await sb.from('nanny_medical').select('*').eq('child_id', childId).single()
     const { data: meds } = await sb.from('nanny_medications').select('*').eq('child_id', childId).order('sort_order')
-
     document.getElementById('allergies-text').textContent = med?.allergies || 'No known allergies'
-    document.getElementById('med-list').innerHTML = !meds || meds.length === 0 ? '<div class="empty">No medications</div>' : meds.map(m => `<div class="meal-item"><div class="med-name">💊 ${m.med_name}</div>${m.instructions ? `<div class="med-instructions">${m.instructions}</div>` : ''}</div>`).join('')
-
+    document.getElementById('med-list').innerHTML = !meds || meds.length === 0
+      ? '<div class="empty">No medications</div>'
+      : meds.map(m => `
+        <div class="med-btn">
+          <div class="med-btn-left">
+            <div class="med-btn-name">💊 ${m.med_name}</div>
+            ${m.instructions ? `<div class="med-btn-instructions">${m.instructions}</div>` : ''}
+          </div>
+          <button class="med-btn-log" onclick="addLog('medication', '${m.med_name.replace(/'/g, "\\'")} given')">Log it</button>
+        </div>`).join('')
     document.getElementById('pediatrician-info').innerHTML = `
       <div class="info-row"><div class="info-label">Name</div><div class="info-value">${med?.pediatrician_name || 'Not set'}</div></div>
       <div class="info-row"><div class="info-label">Phone</div><div class="info-value">${med?.pediatrician_phone ? `<a href="tel:${med.pediatrician_phone}">${med.pediatrician_phone}</a>` : 'Not set'}</div></div>
