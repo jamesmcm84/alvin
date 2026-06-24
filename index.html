@@ -414,7 +414,7 @@
     if (!childId) return
     const start = new Date(selectedDate); start.setHours(0,0,0,0)
     const end = new Date(selectedDate); end.setHours(23,59,59,999)
-    const { data } = await sb.from('nanny_logs').select('*').eq('child_id', childId).gte('created_at', start.toISOString()).lte('created_at', end.toISOString()).order('created_at', { ascending: false })
+    const { data } = await sb.from('nanny_logs').select('*, nanny_log_reactions(id, emoji, member_id, members(name))').eq('child_id', childId).gte('created_at', start.toISOString()).lte('created_at', end.toISOString()).order('created_at', { ascending: false })
     const el = document.getElementById('log-list')
     if (!data || data.length === 0) { el.innerHTML = '<div class="empty">No events logged yet</div>'; return }
     el.innerHTML = data.map(log => {
@@ -429,6 +429,12 @@
           <div class="time">${time}</div>
           ${log.notes ? `<div class="note">${log.notes}</div>` : ''}
           ${log.photo_url ? `<img class="log-photo" src="${log.photo_url}" alt="Log photo" /><a class="log-download" href="${log.photo_url}" download="alvin-photo.jpg" target="_blank">⬇️ Download photo</a>` : ''}
+          ${(() => {
+            const reactions = log.nanny_log_reactions || []
+            const counts = {}
+            reactions.forEach(r => { counts[r.emoji] = (counts[r.emoji] || []).concat(r.members?.name || 'Someone') })
+            return Object.keys(counts).length > 0 ? `<div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">${Object.entries(counts).map(([emoji, names]) => `<span title="${names.join(', ')}" style="background:#f5f5f5;border:1px solid #eee;border-radius:20px;padding:2px 8px;font-size:13px;">${emoji} ${names.length}</span>`).join('')}</div>` : ''
+          })()}
         </div>
         <div class="log-actions">
           <button class="btn-edit" onclick="openEditModal(decodeURIComponent('${safeLog}'))">Edit</button>
