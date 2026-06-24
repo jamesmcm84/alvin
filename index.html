@@ -403,6 +403,7 @@
       await sb.from('nanny_logs').insert({ child_id: childId, logged_by: currentMemberId, type: 'photo', label: 'Photo', photo_url: data.secure_url })
       loadLogs()
       showToast('📷 Photo added to log!')
+      notifyParents('Photo 📷')
     } else {
       showToast('Upload failed — try again')
     }
