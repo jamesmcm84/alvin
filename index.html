@@ -429,12 +429,7 @@
           <div class="time">${time}</div>
           ${log.notes ? `<div class="note">${log.notes}</div>` : ''}
           ${log.photo_url ? `<img class="log-photo" src="${log.photo_url}" alt="Log photo" /><a class="log-download" href="${log.photo_url}" download="alvin-photo.jpg" target="_blank">⬇️ Download photo</a>` : ''}
-          ${(() => {
-            const reactions = log.nanny_log_reactions || []
-            const counts = {}
-            reactions.forEach(r => { counts[r.emoji] = (counts[r.emoji] || []).concat(r.members?.name || 'Someone') })
-            return Object.keys(counts).length > 0 ? `<div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">${Object.entries(counts).map(([emoji, names]) => `<span title="${names.join(', ')}" style="background:#f5f5f5;border:1px solid #eee;border-radius:20px;padding:2px 8px;font-size:13px;">${emoji} ${names.length}</span>`).join('')}</div>` : ''
-          })()}
+          ${buildReactions(log.nanny_log_reactions || [])}
         </div>
         <div class="log-actions">
           <button class="btn-edit" onclick="openEditModal(decodeURIComponent('${safeLog}'))">Edit</button>
