@@ -368,7 +368,7 @@
   async function addLog(type, label) {
     if (!childId) return
     await sb.from('nanny_logs').insert({ child_id: childId, logged_by: currentMemberId, type, label: label || null })
-    loadLogs()
+    await loadLogs()
     const t = LOG_TYPES[type] || { label: label || type, emoji: '📝' }
     showToast(`${t.emoji} ${label || t.label} logged!`)
     notifyParents(label || t.label)
