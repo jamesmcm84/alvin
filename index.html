@@ -409,7 +409,18 @@
     }
     document.getElementById('photo-log-input').value = ''
   }
-
+  function buildReactions(reactions) {
+    if (!reactions || reactions.length === 0) return ''
+    const counts = {}
+    reactions.forEach(r => {
+      if (!counts[r.emoji]) counts[r.emoji] = []
+      counts[r.emoji].push(r.members?.name || 'Someone')
+    })
+    const pills = Object.entries(counts).map(([emoji, names]) =>
+      `<span title="${names.join(', ')}" style="background:#f5f5f5;border:1px solid #eee;border-radius:20px;padding:2px 8px;font-size:13px;cursor:default">${emoji} ${names.length}</span>`
+    ).join('')
+    return `<div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">${pills}</div>`
+  }
   async function loadLogs() {
     if (!childId) return
     const start = new Date(selectedDate); start.setHours(0,0,0,0)
